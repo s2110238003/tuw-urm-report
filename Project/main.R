@@ -65,11 +65,12 @@ g_colored_light_on <- data_accumulated[,2]
 
 
 # Questionnaire 1
-# TODO: Note that this is probably not final. I just played around a little bit to understand R and the data better.
+# TODO: Note that all of this is probably not final. I just played around a little bit to understand R and the data better.
 
 # How mentally demanding was the task?
 x_1_1 <- data_accumulated[,3]
 t_1_1 <- t.test(x_1_1 ~ g_colored_light_on)
+print(t_1_1)
 p_1_1 <- t_1_1$p.value
 boxplot(
   data_accumulated[,3] ~ g_colored_light_on,
@@ -81,6 +82,7 @@ boxplot(
 # How physically demanding was the task?
 x_1_2 <- data_accumulated[,4]
 t_1_2 <- t.test(x_1_2 ~ g_colored_light_on)
+print(t_1_2)
 p_1_2 <- t_1_2$p.value
 boxplot(
   data_accumulated[,4] ~ g_colored_light_on,
@@ -92,6 +94,7 @@ boxplot(
 # How hurried or rushed was the pace of the task?
 x_1_3 <- data_accumulated[,5]
 t_1_3 <- t.test(x_1_3 ~ g_colored_light_on)
+print(t_1_3)
 p_1_3 <- t_1_3$p.value
 boxplot(
   data_accumulated[,5] ~ g_colored_light_on,
@@ -103,6 +106,7 @@ boxplot(
 # How successful were you in accomplishing what you were asked to do?
 x_1_4 <- data_accumulated[,6]
 t_1_4 <- t.test(x_1_4 ~ g_colored_light_on)
+print(t_1_4)
 p_1_4 <- t_1_4$p.value
 boxplot(
   data_accumulated[,6] ~ g_colored_light_on,
@@ -114,6 +118,7 @@ boxplot(
 # How hard did you have to work to accomplish your level of performance? 
 x_1_5 <- data_accumulated[,7]
 t_1_5 <- t.test(x_1_5 ~ g_colored_light_on)
+print(t_1_5)
 p_1_5 <- t_1_5$p.value
 boxplot(
   data_accumulated[,7] ~ g_colored_light_on,
@@ -125,6 +130,7 @@ boxplot(
 # How insecure, discouraged, irritated, or stressed did you feel during the task? 
 x_1_6 <- data_accumulated[,8]
 t_1_6 <- t.test(x_1_6 ~ g_colored_light_on)
+print(t_1_6)
 p_1_6 <- t_1_6$p.value
 boxplot(
   data_accumulated[,8] ~ g_colored_light_on,
@@ -137,7 +143,94 @@ boxplot(
 # Questionnaire 2
 # TODO
 
+# x_2_1 <- data_accumulated[,8]
+# t_2_1 <- t.test(x_2_1 ~ g_colored_light_on)
+# print(t_2_1)
+# p_2_1 <- t_2_1$p.value
+# boxplot(
+#   data_accumulated[,0] ~ g_colored_light_on,
+#   xlab="Coloured light on?",
+#   ylab="...",
+#   main=paste("t-test p =", round(p_2_1,4))
+# )
+
+
 
 # Tool data
-# TODO
+# TODO: We actually do not really care too much about the participant's progress, I still added these tests to better understand the data.
+
+# Text - Characters Typed
+x_3_1 <- nchar(data_accumulated[,28])
+t_3_1 <- t.test(x_3_1 ~ g_colored_light_on)
+print(t_3_1)
+p_3_1 <- t_3_1$p.value
+boxplot(
+  nchar(data_accumulated[,28]) ~ g_colored_light_on,
+  xlab="Coloured light on?",
+  ylab="Text - Characters Typed",
+  main=paste("t-test p =", round(p_3_1,4))
+)
+
+# Spot the Difference - Clicks
+x_3_2 <- data_accumulated[,29]
+t_3_2 <- t.test(x_3_2 ~ g_colored_light_on)
+print(t_3_2)
+p_3_2 <- t_3_2$p.value
+boxplot(
+  data_accumulated[,29] ~ g_colored_light_on,
+  xlab="Coloured light on?",
+  ylab="Spot the Difference - Clicks",
+  main=paste("t-test p =", round(p_3_2,4))
+)
+
+# Spot the Difference - Detections
+x_3_3 <- data_accumulated[,30]
+t_3_3 <- t.test(x_3_3 ~ g_colored_light_on)
+print(t_3_3)
+p_3_3 <- t_3_3$p.value
+boxplot(
+  data_accumulated[,30] ~ g_colored_light_on,
+  xlab="Coloured light on?",
+  ylab="Spot the Difference - Detections",
+  main=paste("t-test p =", round(p_3_3,4))
+)
+
+# Glyph Detection - Total Answers
+x_3_4 <- data_accumulated[,31]
+t_3_4 <- t.test(x_3_4 ~ g_colored_light_on)
+print(t_3_4)
+p_3_4 <- t_3_4$p.value
+boxplot(
+  data_accumulated[,31] ~ g_colored_light_on,
+  xlab="Coloured light on?",
+  ylab="Glyph Detection - Total Answers",
+  main=paste("t-test p =", round(p_3_4,4))
+)
+
+# Glyph Detection - Correct Answers
+x_3_5 <- data_accumulated[,32]
+t_3_5 <- t.test(x_3_5 ~ g_colored_light_on)
+print(t_3_5)
+p_3_5 <- t_3_5$p.value
+boxplot(
+  data_accumulated[,32] ~ g_colored_light_on,
+  xlab="Coloured light on?",
+  ylab="Glyph Detection - Correct Answers",
+  main=paste("t-test p =", round(p_3_5,4))
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
