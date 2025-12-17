@@ -1,3 +1,5 @@
+library(dplyr)
+
 # Import tool data
 p01_tool <- read.csv("../Data/URM_Study1_P1.csv")
 p02_tool <- read.csv("../Data/URM_Study1_P2.csv")
@@ -23,16 +25,38 @@ p20_tool <- read.csv("../Data/URM_Study1_P20.csv")
 # Merge tool data into one big table
 data_tool <- bind_rows(mget(ls(pattern = "^p\\d+_tool$")))
 
-# Merge tool data with questionnaire data
-# TODO
+data_tool_iteration_1 <- subset(data_tool, data_tool[,2] == 1)
+data_tool_iteration_2 <- subset(data_tool, data_tool[,2] == 2)
 
-# Split data into a table per iteration
-library(dplyr)
-data_tool_run1 <- data_tool %>% filter(Run == 1)
-data_tool_run2 <- data_tool %>% filter(Run == 2)
 
-# Split tool data into a table per light condition
-# TODO
+# Read and prepare questionnaire data
+data_questionnaire <- read.csv("../Data/URM_Study1_FormResponses.csv", check.names = FALSE)
+data_demographics <- subset(data_questionnaire, select = 1:9)
+
+data_questionnaire_iteration_1 <- subset(data_questionnaire, select = c(2, 10:32))
+data_questionnaire_iteration_2 <- subset(data_questionnaire, select = c(2, 33:55))
+
+
+# Merge tables to contain tool and questionnaire data
+data_iteration_1 <- merge(data_questionnaire_iteration_1, data_tool_iteration_1, by = 1, all = TRUE)
+data_iteration_2 <- merge(data_questionnaire_iteration_2, data_tool_iteration_2, by = 1, all = TRUE)
+
+
+# Split tables per condition
+data_iteration_1_color <- subset(data_iteration_1, data_iteration_1[,2] == "Yes")
+data_iteration_1_white <- subset(data_iteration_1, data_iteration_1[,2] == "No")
+
+data_iteration_2_color <- subset(data_iteration_2, data_iteration_2[,2] == "Yes")
+data_iteration_2_white <- subset(data_iteration_2, data_iteration_2[,2] == "No")
+
+data_color <- rbind(data_iteration_1_color, data_iteration_2_color)
+data_color <- data_color[order(data_color[,1]), ]
+
+data_white <- rbind(data_iteration_1_white, data_iteration_2_white)
+data_white <- data_white[order(data_white[,1]), ]
+
+
 
 # Do actual analysis
 # TODO
+
