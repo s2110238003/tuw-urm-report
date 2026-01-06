@@ -136,3 +136,123 @@ rm(list = setdiff(ls(), c("data_long", "data_color", "data_white", "data_demogra
   # demo info, no iteration, no condition
 
 #===============================================================================
+#===============================================================================
+#===============================================================================
+
+                            # ANALYSIS - PLAN
+
+# 1. NASA-TLX - paired t-test per condition (Wilcoxon if not normally distributed)
+
+# 2. Flow Short Scale - Paired t-test (Wilcoxon if not normally distributed)
+
+# 3. Performance metrics - paired comparison
+  # - (not needed for well being and thus not as relevant to our hypothesis but interesting)
+  # - (consider: learning effects, short task duration, high variance)
+  # - (frame as "exploratory analyses of task performance")
+
+#===============================================================================
+#===============================================================================
+#===============================================================================
+
+# NASA-TLX
+
+# Checks:
+table(data_long$condition)
+table(data_long$participant_id, data_long$condition)
+
+
+# Identify TLX columns programmatically (robust to line breaks & truncation)
+tlx_items <- grep(
+  "mentally demanding|physically demanding|hurried or rushed|successful were you|hard did you have to work|insecure, discouraged",
+  names(data_long),
+  ignore.case = TRUE,
+  value = TRUE
+)
+
+# Sanity check: must be exactly 6 items
+stopifnot(length(tlx_items) == 6)
+
+# Inspect structure
+str(data_long[, tlx_items])
+
+# Numeric conversion
+data_long[, tlx_items] <- lapply(data_long[, tlx_items], as.numeric)
+
+# Compute TLX overall - six answers into one workload score
+data_long$TLX_overall <- rowMeans(
+  data_long[, tlx_items],
+  na.rm = TRUE
+)
+
+# Check that TLX_overall exists - yes
+names(data_long)
+
+# Now we can compare - white vs colored per participant
+install.packages("tidyr")
+library(tidyr)
+
+tlx_table <- data_long %>%
+  select(participant_id, condition, TLX_overall) %>%
+  pivot_wider(
+    names_from = condition,
+    values_from = TLX_overall,
+    names_prefix = "TLX_"
+  ) %>%
+  mutate(
+    TLX_diff = TLX_colored - TLX_white
+  ) %>%
+  arrange(participant_id)
+
+# Analysis ready NASA-TLX table:
+summary(tlx_table)
+
+# INFO: DIFFERENCES - white VS colored light
+cat(
+  "Mean TLX (white):", mean(tlx_table$TLX_white), "\n",
+  "Mean TLX (colored):", mean(tlx_table$TLX_colored), "\n",
+  "Mean difference (colored - white):", mean(tlx_table$TLX_diff), "\n"
+)
+  # The mean difference is very close to zero
+  # Differences go both directions across participants
+  # If there is an effect, it is very small
+
+
+# INFO: NORMALITY
+# The t-test assumed the within-participant difference (colored − white) is approximately normal
+# We need to check TLX_diff for this
+
+  # Numerical check:
+  shapiro.test(tlx_table$TLX_diff) # p-value = 0.07388 >= 0.05 -> paired t-test is okay
+  
+  # Visual Check
+    hist(
+      tlx_table$TLX_diff,
+      main = "NASA-TLX Difference Scores (Colored − White)",
+      xlab = "Difference"
+    )
+    qqnorm(tlx_table$TLX_diff)
+    qqline(tlx_table$TLX_diff)
+  # Normally distributed -> paired t-test is okay
+
+# T-TEST: compares within-participant differences, not group averages
+    t.test(
+      tlx_table$TLX_colored,
+      tlx_table$TLX_white,
+      paired = TRUE
+    )
+
+# INFO: t-test    
+# Hypothesis: “Does perceived workload differ between colored and white lighting conditions?”
+# t ≈ 0.25 -> the difference between conditions is tiny
+# p = 0.8059 -> non-significant result -> very big, no evidence that colored and white lighting differ in workload, observed difference can be explained by random variation
+# 95% CI: [−0.74, 0.94] -> the true effect could be a small decrease or a small increase, the interval includes 0 comfortably, no plausible meaningful effect is supported
+
+
+
+
+
+
+
+
+
+
