@@ -1,4 +1,4 @@
-#===============================================================================
+#=== DATA SETUP ============================================================================
 # DATA SETUP
 
 library(dplyr)
@@ -92,7 +92,7 @@ data_color <- data_color[order(data_color$participant_id), ]
 data_white <- data_long[data_long$condition == "white", ]
 data_white <- data_white[order(data_white$participant_id), ]
 
-#===============================================================================
+#=== CHECKS ============================================================================
 
 # CHECKS
 
@@ -110,7 +110,7 @@ stopifnot(all(table(data_long$participant_id, data_long$condition) == 1))
 # Optional: Visual confirmation
 head(data_long[, c("participant_id", "iteration", "condition")], 10)
 
-#-------------------------------------------------------------------------------
+#--- CLEAN UP ----------------------------------------------------------------------------
 
 #CLEAN UP
 
@@ -118,7 +118,7 @@ head(data_long[, c("participant_id", "iteration", "condition")], 10)
 rm(list = setdiff(ls(), c("data_long", "data_color", "data_white", "data_demographics")))
 
 
-#===============================================================================
+#=== EXPLANATION ============================================================================
 
 # EXPLANATION
 
@@ -135,9 +135,7 @@ rm(list = setdiff(ls(), c("data_long", "data_color", "data_white", "data_demogra
   # 20 rows per participant,
   # demo info, no iteration, no condition
 
-#===============================================================================
-#===============================================================================
-#===============================================================================
+#=== ANALYSIS - PLAN ============================================================================
 
                             # ANALYSIS - PLAN
 
@@ -150,9 +148,8 @@ rm(list = setdiff(ls(), c("data_long", "data_color", "data_white", "data_demogra
   # - (consider: learning effects, short task duration, high variance)
   # - (frame as "exploratory analyses of task performance")
 
-#===============================================================================
-#===============================================================================
-#===============================================================================
+
+#=== NASA-TLX ============================================================================
 
 # NASA-TLX
 
@@ -247,12 +244,142 @@ cat(
 # p = 0.8059 -> non-significant result -> very big, no evidence that colored and white lighting differ in workload, observed difference can be explained by random variation
 # 95% CI: [−0.74, 0.94] -> the true effect could be a small decrease or a small increase, the interval includes 0 comfortably, no plausible meaningful effect is supported
 
+#===============================================================================
+#===============================================================================
+#=== FSS - FLOW ============================================================================
 
+# FSS - Flow Short Scale
+# FLOW EXPERIENCE (Items 1-10)
 
+# Identify Flow items
 
+    flow_candidates <- grep(
+      "Flow|challenge|fluid|time|concentrat|clear|absorbed|thought|control|step",
+      names(data_long),
+      ignore.case = TRUE,
+      value = TRUE
+    )
+    
+    length(flow_candidates) #10
+    flow_candidates # check if correct -> yes
+    
+    # Look at the printed list 'flow_candidates' and select the 10 Flow Experience items (1–10).
+    flow_items <- c(
+      "I feel just the right amount of challenge.",
+      "My thoughts/activities run fluidly and smoothly.",
+      "I don’t notice time passing.",
+      "I have no difficulty concentrating.",
+      "My mind is completely clear.",
+      "I am totally absorbed in what I am doing.",
+      "The right thoughts/movements occur of their own accord.",
+      "I know what I have to do each step of the way.",
+      "I feel that I have everything under control.",
+      "I am completely lost in thought."
+    )
+    
+    # Sanity check
+    stopifnot(all(flow_items %in% names(data_long)))
+    
+    # Inspect
+    str(data_long[, flow_items])
+    
+    # (Optional but safe) ensure numeric
+    data_long[, flow_items] <- lapply(data_long[, flow_items], as.numeric)
+    
+    # Compute Flow Experience composite (mean of items 1–10)
+    data_long$Flow_overall <- rowMeans(
+      data_long[, flow_items],
+      na.rm = TRUE
+    )
+    
+    # Check - must give 1-7 range -> yes
+    summary(data_long$Flow_overall)
+    
+  
+# build paired Flow table (white vs color)
+    library(tidyr)
+    library(dplyr)
+    
+    flow_table <- data_long %>%
+      select(participant_id, condition, Flow_overall) %>%
+      pivot_wider(
+        names_from = condition,
+        values_from = Flow_overall,
+        names_prefix = "Flow_"
+      ) %>%
+      mutate(
+        Flow_diff = Flow_colored - Flow_white
+      ) %>%
+      arrange(participant_id)
+    
+    summary(flow_table)
+    
+    
+# INFO: NORMALITY
+    
+  # Normality Check - numerical
+    shapiro.test(flow_table$Flow_diff)
+    # W = 0.88698, p-value = 0.02368 < p=0.05 -> reject normality
+    # the assumption for a paired t-test is technically violated
+    
+  # Normality Check - visual -> reject normality
+    hist(flow_table$Flow_diff,
+         main = "Flow Difference Scores (Colored − White)",
+         xlab = "Difference")
+    # The histogram shows mild skew
+    # Flow was slightly lower under colored light on average
+    # But one or two participants had much higher flow under colored light
+    
+    qqnorm(flow_table$Flow_diff)
+    qqline(flow_table$Flow_diff)
+    # The Q–Q plot shows systematic deviation in the upper tail
+    # If the data was normally distributed all points would fall on the straight line
 
+    
+# WILCOXON TEST - not normal distribution
+    
+    wilcox.test(
+      flow_table$Flow_colored,
+      flow_table$Flow_white,
+      paired = TRUE,
+      exact = FALSE
+    )
+    # INFO: V = 70, p = 0.323
+    # p = 0.323 -> not statistically significant
+    # V = 70 -> the sum of signed ranks, it is an intermediate test statistic, it is not interpretable on its own and Journals generally do not require interpretation of V, only reporting it
+    
+# Compute Effect Size
+    # Wilcoxon test (store result)
+    w_test <- wilcox.test(
+      flow_table$Flow_colored,
+      flow_table$Flow_white,
+      paired = TRUE,
+      exact = FALSE,
+      correct = FALSE
+    )
+    
+    # Compute Z
+    z_value <- qnorm(w_test$p.value / 2) * sign(median(flow_table$Flow_diff))
+    # INFO: z = 1.008302 -> very close to zero
+    # indicates the observed difference is small and unsystematic
+    # tells you how far the observed result is from zero, in standard deviation units
+    # not necessary to include in the paper
+    
+    # Effect size r
+    r_effect <- abs(z_value) / sqrt(nrow(flow_table))
+    # INFO: r = 0.2254632 -> small-to-moderate effect
+    # does not mean meaningful in practice, especially given: non-significant p-value, very small mean difference, confidence intervals likely spanning zero
+    # There may be individual differences, but no reliable group-level effect
+    # include in paper
+    
+#=== FSS - WORRY ============================================================================
+    
+# FSS - Flow Short Scale
+# WORRY (Items 11–13)
+    
+    
+    
+#=== FSS - WORRY ============================================================================
 
-
-
-
-
+# FSS - Flow Short Scale
+# WORRY (Items 11–13)
