@@ -377,9 +377,93 @@ cat(
 # FSS - Flow Short Scale
 # WORRY (Items 11–13)
     
+    grep(
+      "stake|mistake|fail",
+      names(data_long),
+      ignore.case = TRUE,
+      value = TRUE
+    )
+    
+    worry_items <- c(
+      "Something important to me is at stake here.",
+      "I won’t make any mistake here.",
+      "I am worried about failing."
+    )
+    
+    # Sanity check: make sure all exist in the data
+    stopifnot(all(worry_items %in% names(data_long)))
+    
+    # Inspect structure
+    str(data_long[, worry_items])
+    
+    # Ensure numeric (safe)
+    data_long[, worry_items] <- lapply(data_long[, worry_items], as.numeric)
+    
+    # Compute Worry composite (mean of items 11–13)
+    data_long$Worry_overall <- rowMeans(
+      data_long[, worry_items],
+      na.rm = TRUE
+    )
+    
+    summary(data_long$Worry_overall)
+    
+  # Create paired Worry table (white vs colored)
+    library(dplyr)
+    library(tidyr)
+    
+    worry_table <- data_long %>%
+      select(participant_id, condition, Worry_overall) %>%
+      pivot_wider(
+        names_from = condition,
+        values_from = Worry_overall,
+        names_prefix = "Worry_"
+      ) %>%
+      mutate(
+        Worry_diff = Worry_colored - Worry_white
+      ) %>%
+      arrange(participant_id)
+    
+    summary(worry_table)
+    
+    #INFO: Participants experienced low task-related worry overall
+      # This is not a stressed or anxiety-inducing task
+      # That already limits how large any lighting effect could be
+      # matters conceptually and is worth mentioning in the paper.
     
     
-#=== FSS - WORRY ============================================================================
+  # INFO: NORMALITY CHECKS
+    # Numerical
+    shapiro.test(worry_table$Worry_diff)
+    # p-value = 0.06438 > 0.05 -> do not reject normality, but close
+    
+    # Visual
+    hist(
+      worry_table$Worry_diff,
+      main = "Worry Difference Scores (Colored − White)",
+      xlab = "Difference"
+    )
+    # supports approximate normality
+    
+    qqnorm(worry_table$Worry_diff)
+    qqline(worry_table$Worry_diff)
+    # Reject normality BUT
+    # The Q–Q plot is sensitive to small deviations that are not practically problematic
+    # Happens with few items (here: 3)
+    
+    # INFO: Normality is sufficiently met for a paired t-test.
+    
+# PAIRED T_TEST
+    t.test(
+      worry_table$Worry_colored,
+      worry_table$Worry_white,
+      paired = TRUE
+    )
+    # p = 0.1893 -> not statistically significant
+    # Mean difference = −0.13 -> On average, worry was slightly lower under colored light, but on a 1–7 scale, this difference is very small
+    
+    
+#=== FSS - SKILL-DEMAND ============================================================================
 
 # FSS - Flow Short Scale
-# WORRY (Items 11–13)
+# SKILL-DEMAND (Items 14–16)
+    # INFO: consider skipping in the paper
