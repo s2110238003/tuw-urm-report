@@ -467,3 +467,44 @@ cat(
 # FSS - Flow Short Scale
 # SKILL-DEMAND (Items 14–16)
     # INFO: consider skipping in the paper
+    
+    skill_items <- c(
+      "Compared to all other activities which I partake in, this one is …",
+      "I think that my competence in this area is …",
+      "For me personally, the current demands are …"
+    )
+    
+    stopifnot(all(skill_items %in% names(data_long)))
+    str(data_long[, skill_items])
+    
+    # Compute descriptive composites (useful but optional)
+    data_long[, skill_items] <- lapply(data_long[, skill_items], as.numeric)
+    
+    data_long$SkillBalance_overall <- rowMeans(
+      data_long[, skill_items],
+      na.rm = TRUE
+    )
+    
+    summary(data_long$SkillBalance_overall)
+    
+    aggregate(
+      SkillBalance_overall ~ condition,
+      data = data_long,
+      FUN = mean
+    )
+    
+  # INFO:   
+    #   condition Skill | Balance_overall
+    # 1   colored       |     4.616667
+    # 2     white       |     4.866667
+    
+  # Both values are close to the midpoint of the 9-point scale
+  # suggests: the task was neither too easy nor too difficult
+  # lighting condition did not meaningfully alter perceived task difficulty or competence balance
+    
+    # no paired test here because this is not the primary outcome, items are on a different scale, we did not pre-specify inferential testing for this construct...
+    
+    
+    
+    
+    
