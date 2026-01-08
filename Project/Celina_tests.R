@@ -214,7 +214,6 @@ cat(
   # If there is an effect, it is very small
 
 
-
 # INFO: NORMALITY
 # The t-test assumed the within-participant difference (colored − white) is approximately normal
 # We need to check TLX_diff for this
