@@ -372,6 +372,42 @@ cat(
     # There may be individual differences, but no reliable group-level effect
     # include in paper
     
+    
+    # Optional GRAPH - paired plot for Flow Experience
+    
+    library(dplyr)
+    library(tidyr)
+    library(ggplot2)
+    
+    # Build a plotting table from existing Flow composite in data_long
+    flow_plot <- data_long %>%
+      select(participant_id, condition, Flow_overall) %>%
+      mutate(
+        condition = factor(condition, levels = c("white", "colored"))
+      ) %>%
+      pivot_wider(
+        names_from = condition,
+        values_from = Flow_overall
+      )
+    
+    # ---- Paired dot plot (line per participant) ----
+    ggplot(flow_plot) +
+      geom_segment(aes(x = 1, xend = 2, y = white, yend = colored), alpha = 0.5) +
+      geom_point(aes(x = 1, y = white), size = 2) +
+      geom_point(aes(x = 2, y = colored), size = 2) +
+      stat_summary(aes(x = 1, y = white), fun = mean, geom = "point", size = 3) +
+      stat_summary(aes(x = 2, y = colored), fun = mean, geom = "point", size = 3) +
+      scale_x_continuous(
+        breaks = c(1, 2),
+        labels = c("White light", "Colored light")
+      ) +
+      labs(
+        title = "Flow Experience by Lighting Condition (Paired)",
+        x = "",
+        y = "Flow Experience (mean of FSS Items 1–10)"
+      ) +
+      theme_minimal()
+    
 #=== FSS - WORRY ============================================================================
     
 # FSS - Flow Short Scale
@@ -503,6 +539,21 @@ cat(
   # lighting condition did not meaningfully alter perceived task difficulty or competence balance
     
     # no paired test here because this is not the primary outcome, items are on a different scale, we did not pre-specify inferential testing for this construct...
+    
+    
+    
+    
+#=== EXPLORATORY - Performance Metrics ============================================================================
+    
+    write.csv(data_long)
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
